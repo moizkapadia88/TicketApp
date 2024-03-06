@@ -4,14 +4,14 @@ This ticket app can be used to book a ticket from One station to another.
 Below are the supported APIs : 
 
 1. Purchase Ticket Endpoint:
-2. 
+
 Method: POST
 URL: /tickets/purchaseTicket
 
 Description: Allows users to purchase a train ticket. It accepts a JSON payload containing details such as the origin, destination, and user information.
 
 
-4. Get Receipt Endpoint:
+2. Get Receipt Endpoint:
 
 Method: GET
 URL: /tickets/users/{userId}
