@@ -32,12 +32,13 @@ public class SeatAllocator {
 	}
 
 	public String allocateSeat() {
-		String section = sections[new Random().nextInt(sections.length)];
-		List<Seat> availableSeats = availableSeatsBySection.get(section);
-		for (Seat seat : availableSeats) {
-			if (seat.isAvailable()) {
-				seat.setAvailable(false);
-				return seat.getSeatNumber();
+		for (String section : sections) {
+			List<Seat> availableSeats = availableSeatsBySection.get(section);
+			for (Seat seat : availableSeats) {
+				if (seat.isAvailable()) {
+					seat.setAvailable(false);
+					return seat.getSeatNumber();
+				}
 			}
 		}
 		return null;

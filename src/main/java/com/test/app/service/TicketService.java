@@ -5,96 +5,58 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import com.test.app.model.Ticket;
+import com.test.app.model.TicketReceipt;
+import com.test.app.model.TicketRequest;
 
 @Service
 public class TicketService {
 
-	/*public static void main(String[] args) {
-		TrainService service = new TrainService();
-
-		User user = new User();
-		user.setEmail("mk1@gmail.com");
-		user.setFirstName("Moiz");
-		user.setLastName("Kapadia");
-
-		User user2 = new User();
-		user2.setEmail("mk2@gmail.com");
-		user2.setFirstName("Moiz");
-		user2.setLastName("Kapadia");
-		//
-		// User user3 = new User();
-		// user3.setEmail("mk3@gmail.com");
-		// user3.setFirstName("Moiz");
-		// user3.setLastName("Kapadia");
-
-		Ticket ticket = new Ticket();
-		ticket.setFrom("London");
-		ticket.setTo("France");
-		ticket.setUser(user);
-
-		service.purchaseTicket(ticket);
-
-		// ticket.setUser(user3);
-		// service.purchaseTicket(ticket);
-
-		service.modifyUserSeat("mk1@gmail.com", "B", "1");
-		// service.modifyUserSeat("mk2@gmail.com", "B", "2");
-		// service.modifyUserSeat("mk3@gmail.com", "A", "1");
-
-		ticket.setUser(user2);
-		service.purchaseTicket(ticket);
-		
-		service.modifyUserSeat("mk2@gmail.com", "B", "1");
-		
-		service.removeUser("mk1@gmail.com");
-		// service.removeUser("mk3@gmail.com");
-
-		// service.modifyUserSeat("mk1@gmail.com", "A", "1");
-		service.modifyUserSeat("mk2@gmail.com", "B", "1");
-		// service.modifyUserSeat("mk3@gmail.com", "A", "1");
-		
-	}*/
-
-	private Map<String, Ticket> tickets = new HashMap<>(); // userId -> Ticket
-	private Map<String, String> userSeats = new HashMap<>(); // userId -> seat
-	private final double price = 20.0;
+	private Map<String, TicketReceipt> tickets = new HashMap<>();
+	private final double ticketPrice = 20.0;
 
 	@Autowired
 	private SeatAllocator seatAllocator;
 
-//	public TrainService() {
-//		seatAllocator = new SeatAllocator();
-//	}
-
-	public Ticket purchaseTicket(Ticket ticket) {
-		ticket.setPrice(price);
+	public TicketReceipt purchaseTicket(TicketRequest ticket) {
 		String seat = allocateSeat();
 
 		if (seat == null) {
-			// ticket cannot be booked.
-			System.out.println("Sorry!! No tickets available");
+			System.out.println("No tickets available");
 			return null;
 		}
 
 		System.out.println("Ticket booked for user:"
 				+ ticket.getUser().getEmail() + " - Seat:" + seat);
-		userSeats.put(ticket.getUser().getEmail(), seat);
-		tickets.put(ticket.getUser().getEmail(), ticket);
+		TicketReceipt ticketReceipt = getTicketReceipt(ticket, seat);
 
-		return ticket;
+		tickets.put(ticket.getUser().getEmail(), ticketReceipt);
+
+		System.out.println(ticketReceipt);
+		return ticketReceipt;
 	}
 
-	public Ticket getReceipt(String userId) {
+	private TicketReceipt getTicketReceipt(TicketRequest ticket, String seat) {
+		TicketReceipt ticketReceipt = new TicketReceipt();
+		ticketReceipt.setFrom(ticket.getFrom());
+		ticketReceipt.setTo(ticket.getTo());
+		ticketReceipt.setUser(ticket.getUser());
+		ticketReceipt.setPrice(ticketPrice);
+		ticketReceipt.setSeat(seat);
+
+		return ticketReceipt;
+	}
+
+	public TicketReceipt getReceipt(String userId) {
 		return tickets.get(userId);
 	}
 
 	public Map<String, String> getUsersBySection(String section) {
 		Map<String, String> usersBySection = new HashMap<>();
-		for (Map.Entry<String, String> entry : userSeats.entrySet()) {
-			if (entry.getValue().startsWith(section)) {
-				usersBySection.put(entry.getKey(), entry.getValue());
+		for (Entry<String, TicketReceipt> entry : tickets.entrySet()) {
+			if (entry.getValue().getSeat().startsWith(section)) {
+				usersBySection.put(entry.getKey(), entry.getValue().getSeat());
 			}
 		}
 		return usersBySection;
@@ -102,26 +64,37 @@ public class TicketService {
 
 	public boolean removeUser(String userId) {
 		if (tickets.containsKey(userId)) {
-			String seat = userSeats.remove(userId);
-			tickets.remove(userId);
-			seatAllocator.deallocateSeat(seat);
+			TicketReceipt ticketReceipt = tickets.remove(userId);
+			seatAllocator.deallocateSeat(ticketReceipt.getSeat());
+			System.out.println("User:" + userId + "  removed successfully ");
 			return true;
 		}
+
+		System.out.println("User:" + userId + "  not found ");
 		return false;
 	}
 
 	public boolean modifyUserSeat(String userId, String section, String seat) {
-		if (tickets.containsKey(userId)) {
-			String currentSeat = userSeats.get(userId);
+		TicketReceipt ticketReceipt = tickets.get(userId);
+		if (ticketReceipt != null) {
+			String currentSeat = ticketReceipt.getSeat();
+			String requestedSet = section + seat;
+			
 			if (currentSeat != null) {
+				if (currentSeat.equalsIgnoreCase(requestedSet)) {
+					System.out.println("Requested seat:" + requestedSet
+							+ "  successfully updated");
+					return true;
+				}
+
 				String newSeat = seatAllocator.allocateSeat(section, seat);
 				if (newSeat != null) {
-					userSeats.put(userId, newSeat);
-					System.out.println("Requested seat:" + section + seat
+					ticketReceipt.setSeat(newSeat);
+					System.out.println("Requested seat:" + requestedSet
 							+ "  successfully updated");
 					return true;
 				} else {
-					System.err.println("Requested seat:" + section + seat
+					System.err.println("Requested seat:" + requestedSet
 							+ " is not available.");
 				}
 			}

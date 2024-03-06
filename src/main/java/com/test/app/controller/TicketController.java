@@ -3,6 +3,7 @@ package com.test.app.controller;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.test.app.model.Ticket;
+import com.test.app.model.TicketReceipt;
+import com.test.app.model.TicketRequest;
 import com.test.app.service.TicketService;
 
 @RestController
@@ -25,14 +27,15 @@ public class TicketController {
 	private TicketService ticketService;
 
 	@PostMapping("/purchaseTicket")
-	public ResponseEntity<Ticket> purchaseTicket(@RequestBody Ticket ticket) {
-		Ticket purchasedTicket = ticketService.purchaseTicket(ticket);
-		return ResponseEntity.ok(purchasedTicket);
+	public ResponseEntity<TicketReceipt> purchaseTicket(
+			@RequestBody TicketRequest ticket) {
+		TicketReceipt purchasedTicket = ticketService.purchaseTicket(ticket);
+		return ResponseEntity.status(HttpStatus.CREATED).body(purchasedTicket);
 	}
 
 	@GetMapping("/receipts/{userId}")
-	public ResponseEntity<Ticket> getReceipt(@PathVariable String userId) {
-		Ticket ticket = ticketService.getReceipt(userId);
+	public ResponseEntity<TicketReceipt> getReceipt(@PathVariable String userId) {
+		TicketReceipt ticket = ticketService.getReceipt(userId);
 		if (ticket == null) {
 			return ResponseEntity.notFound().build();
 		}

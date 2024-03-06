@@ -4,9 +4,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.test.app.model.Ticket;
+import com.test.app.model.TicketRequest;
 import com.test.app.service.TicketService;
 
 @WebMvcTest(TicketController.class)
@@ -26,7 +27,7 @@ public class TicketControllerTest {
 
     @Test
     public void testPurchaseTicket() throws Exception {
-        Ticket ticket = new Ticket();
+        TicketRequest ticket = new TicketRequest();
         ticket.setFrom("London");
         ticket.setTo("France");
 
