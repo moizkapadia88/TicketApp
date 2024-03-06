@@ -33,7 +33,7 @@ public class TicketController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(purchasedTicket);
 	}
 
-	@GetMapping("/receipts/{userId}")
+	@GetMapping("/users/{userId}")
 	public ResponseEntity<TicketReceipt> getReceipt(@PathVariable String userId) {
 		TicketReceipt ticket = ticketService.getReceipt(userId);
 		if (ticket == null) {
